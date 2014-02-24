@@ -13,7 +13,6 @@ var passport = require('passport');
 
 var app = express();
 
-// all environments//set up the basic environment
 app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
