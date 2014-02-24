@@ -4,7 +4,7 @@ block content
 	h1 databases
 	each startup in startups
 		- for(var key in startup) {
-			- if (key[0] !== '_' && key[0] !== '$' && key !=='db' && key !== 'collection' && !!startup[key] && startup[key].toString().substring(0,8) != 'function') {
+			- if (key[0] !== '_' && key[0] !== '$' && key !=='db' && key !== 'collection' && key !== 'schema' && !!startup[key] && startup[key].toString().substring(0,8) != 'function') {
 				p=key + ' : ' + startup[key]
 			- }
 		- }
