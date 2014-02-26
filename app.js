@@ -69,8 +69,28 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+app.use('/static', express.static(__dirname + '/public'));
+
 app.get('/', routes.index);
+app.get("/data/startup", function(request, response) {
+	response.type("json");
+	var Startup = require("./models/Startup");
+	Startup.find({}, function(err, startups) {
+		if(err) {
+			response.send(500, "Error retrieving startups from DB");
+		}
+		response.send(startups);
+	});
+});
+app.get("/startups", function(request, response) {
+	response.render("startups");
+
+});
+app.set("/startups", function(request, response) {
+	
+});
 app.get('/dump', express.basicAuth(function(user, pass) { return user === "admin" && pass === "my favorite giraffe apocalypse"; }), db.list);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

@@ -1,4 +1,4 @@
-var db = require('../models/DBItem');
+var db = require('../models/Startup');
 
 exports.list = function (req, res) {	
 	db.find({}, function(err, data) {

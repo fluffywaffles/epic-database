@@ -2,7 +2,7 @@ exports.parse = function () {
 	
 	var fs = require('fs');
 	var _  = require('lodash');
-	var db = require('../models/DBItem');
+	var db = require('../models/Startup');
 
 	var rawcsv;
 	var output = {};
