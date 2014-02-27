@@ -8,12 +8,12 @@ div(ng-repeat="(id, startup) in startups track by id")
     p
       a(href="#/{{startup._id}}/edit")
         | Edit  
-    img(src="{{startup.bannerPhoto}}")
+    img(ng-src="{{startup.bannerPhoto}}")
     h2 Founders
-    p(ng-repeat="founder in startup.founders")
+    p(ng-repeat="founder in startup.founders track by $index")
       | {{founder}}
     h2 Industries
-    p(ng-repeat="industry in startup.industries")
+    p(ng-repeat="industry in startup.industries track by $index")
       | {{industry}}
     h2 Email Address
     p {{startup.email}}
@@ -32,6 +32,6 @@ div(ng-repeat="(id, startup) in startups track by id")
     h2 Details
     p {{startup.details}}
     h2 Related Startups
-    p(ng-repeat="related in startup.relatedStartups")
+    p(ng-repeat="related in startup.relatedStartups track by $index")
       | {{related}}
     hr

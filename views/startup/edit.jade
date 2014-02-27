@@ -17,19 +17,36 @@ table
   tr
     td Founders:
     td
-      p(ng-repeat="founder in toEdit.founders")
-        | {{founder}}
-    td
-      button
-        | Add Founder
+      table
+        tr(ng-repeat="founder in toEdit.founders track by $index")
+          td
+            input(type="text", ng-model="toEdit.founders[$index]")
+          td
+            button(ng-click="deleteFounder($index)")
+              | Delete
+        tr
+          td
+            button(ng-click="addFounder()")
+              | Add Founder
+          td
+     td
+      
   tr
     td Industries:
     td
-      p(ng-repeat="industry in toEdit.industries")
-        | {{industry}}
+      table
+        tr(ng-repeat="industry in toEdit.industries track by $index")
+          td
+            input(type="text", ng-model="toEdit.industries[$index]")
+          td
+            button(ng-click="deleteIndustry($index)")
+              | Delete
+        tr
+          td
+            button(ng-click="addIndustry()")
+              | Add Industry
+          td
     td
-      button
-        | Add Industry
   tr
     td Email Address:
     td
@@ -68,11 +85,19 @@ table
   tr
     td Related Startups: 
     td
-      p(ng-repeat="related in toEdit.relatedStartups")
-        | {{related}}
+      table
+        tr(ng-repeat="related in toEdit.relatedStartups track by $index")
+          td
+            input(type="text", ng-model="toEdit.relatedStartups[$index]")
+          td
+            button(ng-click="deleteRelatedStartup($index)")
+              | Delete
+        tr
+          td
+            button(ng-click="addRelatedStartup()")
+              | Add Related Startup
+          td
     td
-      button
-        | Add Related Startup
 button(ng-click="commitEdit()")
   | Save Changes
 button(ng-click="revertEdit()")

@@ -82,6 +82,30 @@ app.controller("Edit", function($scope, Model, $routeParams) {
 			});
 		};
 		
+		$scope.addFounder = function() {
+			$scope.toEdit.founders.push("New Founder");
+		};
+		
+		$scope.deleteFounder = function(indexToDelete) {
+			$scope.toEdit.founders.splice(indexToDelete, 1);
+		};
+		
+		$scope.addIndustry = function() {
+			$scope.toEdit.industries.push("New industry");
+		};
+		
+		$scope.deleteIndustry = function() {
+			$scope.toEdit.industries.splice(indexToDelete, 1);
+		};
+		
+		$scope.addRelatedStartup = function() {
+			$scope.toEdit.relatedStartups.push("New related startup");
+		};
+		
+		$scope.deleteRelatedStartup = function(indexToDelete) {
+			$scope.toEdit.relatedStartups.splice(indexToDelete, 1);
+		};
+		
 		$scope.revertEdit = loadStartupToEdit;
 		
 	});
