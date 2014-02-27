@@ -54,7 +54,7 @@ mongoose.connect(uristring, function (err, res) {
 		console.log ('ERROR connecting to: ' + uristring + '. ' + err);
 	} else {
 		console.log ('Succeeded connecting to: ' + uristring);
-		require('./util/parsecsv').parse();
+		//require('./util/parsecsv').parse();
 	}
 });
 
@@ -82,9 +82,25 @@ app.get("/data/startup", function(request, response) {
 		response.send(startups);
 	});
 });
-app.get("/startups", function(request, response) {
-	response.render("startups");
-
+app.post("/data/startup", function(request, response) {
+	var toUpdate = request.body;
+	var Startup = require("./models/Startup");
+	//console.log(toUpdate);
+	var id = toUpdate._id;
+	delete toUpdate._id;
+	Startup.findByIdAndUpdate(id, toUpdate, function(err, updated) {
+		if(err) {
+			console.log(err);
+			response.send(400, "Error updating database");
+		} else {
+			console.log(updated);
+			response.send(200);
+		}
+	});
+	
+});
+app.get("/startup/:startupView", function(request, response) {
+	response.render("startup/" + request.params.startupView);
 });
 app.set("/startups", function(request, response) {
 	

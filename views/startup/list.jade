@@ -1,0 +1,37 @@
+div(ng-hide="loaded")
+      p Loading startups
+div(ng-repeat="(id, startup) in startups track by id")
+  div
+    h1 
+      a(href="{{startup.website}}")
+        | {{startup.name}}
+    p
+      a(href="#/{{startup._id}}/edit")
+        | Edit  
+    img(src="{{startup.bannerPhoto}}")
+    h2 Founders
+    p(ng-repeat="founder in startup.founders")
+      | {{founder}}
+    h2 Industries
+    p(ng-repeat="industry in startup.industries")
+      | {{industry}}
+    h2 Email Address
+    p {{startup.email}}
+    h2 Mission
+    p {{startup.mission}}
+    h2 Stage
+    p {{startup.stage}}
+    h2 Location
+    p {{startup.location}}
+    h2 Phone Number
+    p {{startup.phone}}
+    h2 Media
+    p
+      a(href="{{startup.media}}")
+        | {{startup.media}}
+    h2 Details
+    p {{startup.details}}
+    h2 Related Startups
+    p(ng-repeat="related in startup.relatedStartups")
+      | {{related}}
+    hr

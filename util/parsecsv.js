@@ -11,19 +11,19 @@ exports.parse = function () {
 		if (err) return console.log(err);
 		
 		rawcsv = data;
-		console.log(rawcsv);
-		console.log(!!rawcsv);
+		//console.log(rawcsv);
+		//console.log(!!rawcsv);
 		
 		// FIXME: doesn't manage undefined well
 		
 		if (rawcsv) {
 			var lines = rawcsv.split('\n');
-			console.log(lines);
+			//console.log(lines);
 			var headers = lines[0].match(/"((?:[^,"]+,[^,"]+))+"|([^,]+)/g);
 			headers = headers.filter( function (el ) {
 				return el.toLowerCase() !== 'timestamp';
 			});
-			console.log(headers);
+			//console.log(headers);
 
 			lines.slice(1).forEach( function (el, idx) {
 				var data = el.match(/"((?:[^,"]+,[^,"]+))+"|([^,]+)/g);
@@ -48,15 +48,22 @@ exports.parse = function () {
 					output.location = data[11];
 					output.website = data[12];
 					output.media = data[13];
-					output.relatedStartups = [ (' ' + data[14]).trim(), (' ' + data[15]).trim(), (' ' + data[16]).trim() ];
+					output.relatedStartups = [];
+					for(var i = 14; i <= 16; i++) {
+						if(data[14]) {
+							output.relatedStartups.push(data[i]);
+						}
+					}
 					output.details = (' ' + data[17]).trim();
-					console.log(output);
+					//console.log(output);
 					var newItem = new db(output);
 					db.update({ name: output.name }, output, {upsert: true}, function (err) {
-						console.log(err);
+						if(err) {
+							console.log(err);
+						}
 					});
 				}
 			});
 		}
 	});
-}
+};

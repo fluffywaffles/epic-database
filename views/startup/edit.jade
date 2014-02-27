@@ -1,0 +1,80 @@
+table
+  tr
+    td Name:
+    td
+      input(type="text", name="name", ng-model="toEdit.name")
+    td
+  tr
+    td Website:
+    td
+      input(type="text", name="website", ng-model="toEdit.website")
+    td
+  tr
+    td Banner Photo:
+    td
+      input(type="text", name="bannerPhoto", ng-model="toEdit.bannerPhoto")
+    td
+  tr
+    td Founders:
+    td
+      p(ng-repeat="founder in toEdit.founders")
+        | {{founder}}
+    td
+      button
+        | Add Founder
+  tr
+    td Industries:
+    td
+      p(ng-repeat="industry in toEdit.industries")
+        | {{industry}}
+    td
+      button
+        | Add Industry
+  tr
+    td Email Address:
+    td
+      input(type="text", name="email", ng-model="toEdit.email")
+    td
+  tr
+    td Mission:
+    td
+      textarea(name="mission", ng-model="toEdit.mission")
+    td
+  tr
+    td Stage:
+    td
+      input(type="text", name="stage", ng-model="toEdit.stage")
+    td
+  tr
+    td Location:
+    td
+      input(type="text", name="location", ng-model="toEdit.location")
+    td
+  tr
+    td Phone Number:
+    td
+      input(type="text", name="phone", ng-model="toEdit.phone")
+    td
+  tr
+    td Media: 
+    td
+      input(type="text", name="media", ng-model="toEdit.media")
+    td
+  tr
+    td Details:
+    td
+      textarea(name="details", ng-model="toEdit.details")
+    td
+  tr
+    td Related Startups: 
+    td
+      p(ng-repeat="related in toEdit.relatedStartups")
+        | {{related}}
+    td
+      button
+        | Add Related Startup
+button(ng-click="commitEdit()")
+  | Save Changes
+button(ng-click="revertEdit()")
+  | Revert Changes
+
