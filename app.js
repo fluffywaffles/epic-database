@@ -95,6 +95,7 @@ app.post("/data/startup", function(request, response) {
 		} else {
 			console.log(updated);
 			response.send(200);
+			
 		}
 	});
 	

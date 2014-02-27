@@ -2,17 +2,17 @@ table
   tr
     td Name:
     td
-      input(type="text", name="name", ng-model="toEdit.name")
+      input(type="text", name="name", ng-model="toEdit.name", ng-disabled="commiting")
     td
   tr
     td Website:
     td
-      input(type="text", name="website", ng-model="toEdit.website")
+      input(type="text", name="website", ng-model="toEdit.website", ng-disabled="commiting")
     td
   tr
     td Banner Photo:
     td
-      input(type="text", name="bannerPhoto", ng-model="toEdit.bannerPhoto")
+      input(type="text", name="bannerPhoto", ng-model="toEdit.bannerPhoto", ng-disabled="commiting")
     td
   tr
     td Founders:
@@ -20,13 +20,13 @@ table
       table
         tr(ng-repeat="founder in toEdit.founders track by $index")
           td
-            input(type="text", ng-model="toEdit.founders[$index]")
+            input(type="text", ng-model="toEdit.founders[$index]", ng-disabled="commiting")
           td
-            button(ng-click="deleteFounder($index)")
+            button(ng-click="deleteFounder($index)", ng-disabled="commiting")
               | Delete
         tr
           td
-            button(ng-click="addFounder()")
+            button(ng-click="addFounder()", ng-disabled="commiting")
               | Add Founder
           td
      td
@@ -37,50 +37,50 @@ table
       table
         tr(ng-repeat="industry in toEdit.industries track by $index")
           td
-            input(type="text", ng-model="toEdit.industries[$index]")
+            input(type="text", ng-model="toEdit.industries[$index]", ng-disabled="commiting")
           td
-            button(ng-click="deleteIndustry($index)")
+            button(ng-click="deleteIndustry($index)", ng-disabled="commiting")
               | Delete
         tr
           td
-            button(ng-click="addIndustry()")
+            button(ng-click="addIndustry()", ng-disabled="commiting")
               | Add Industry
           td
     td
   tr
     td Email Address:
     td
-      input(type="text", name="email", ng-model="toEdit.email")
+      input(type="text", name="email", ng-model="toEdit.email", ng-disabled="commiting")
     td
   tr
     td Mission:
     td
-      textarea(name="mission", ng-model="toEdit.mission")
+      textarea(name="mission", ng-model="toEdit.mission", ng-disabled="commiting")
     td
   tr
     td Stage:
     td
-      input(type="text", name="stage", ng-model="toEdit.stage")
+      input(type="text", name="stage", ng-model="toEdit.stage", ng-disabled="commiting")
     td
   tr
     td Location:
     td
-      input(type="text", name="location", ng-model="toEdit.location")
+      input(type="text", name="location", ng-model="toEdit.location", ng-disabled="commiting")
     td
   tr
     td Phone Number:
     td
-      input(type="text", name="phone", ng-model="toEdit.phone")
+      input(type="text", name="phone", ng-model="toEdit.phone", ng-disabled="commiting")
     td
   tr
     td Media: 
     td
-      input(type="text", name="media", ng-model="toEdit.media")
+      input(type="text", name="media", ng-model="toEdit.media", ng-disabled="commiting")
     td
   tr
     td Details:
     td
-      textarea(name="details", ng-model="toEdit.details")
+      textarea(name="details", ng-model="toEdit.details", ng-disabled="commiting")
     td
   tr
     td Related Startups: 
@@ -88,18 +88,20 @@ table
       table
         tr(ng-repeat="related in toEdit.relatedStartups track by $index")
           td
-            input(type="text", ng-model="toEdit.relatedStartups[$index]")
+            input(type="text", ng-model="toEdit.relatedStartups[$index]", ng-disabled="commiting")
           td
-            button(ng-click="deleteRelatedStartup($index)")
+            button(ng-click="deleteRelatedStartup($index)", ng-disabled="commiting")
               | Delete
         tr
           td
-            button(ng-click="addRelatedStartup()")
+            button(ng-click="addRelatedStartup()", ng-disabled="commiting")
               | Add Related Startup
           td
     td
-button(ng-click="commitEdit()")
+button(ng-click="commitEdit()", ng-disabled="commiting")
   | Save Changes
-button(ng-click="revertEdit()")
+button(ng-click="revertEdit()", ng-disabled="commiting")
   | Revert Changes
+p(ng-show="commiting")
+  | Saving changes...
 

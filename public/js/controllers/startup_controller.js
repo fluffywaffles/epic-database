@@ -48,9 +48,10 @@ app.factory("Model", ["$http", function($http) {
 			$http.post("/data/startup", startupToEdit).success(function(data) {
 				console.log("success");
 				startups[startupToEdit._id] = startupToEdit;
-				onEdited(startups);
+				onEdited(undefined, startups);
 			}).error(function(data, status) {
 				console.log("error "+ status);
+				onEdited("Error", undefined);
 			});
 			
 		}
@@ -68,7 +69,7 @@ app.controller("StartupList", function($scope, Model) {
 	});
 });
 
-app.controller("Edit", function($scope, Model, $routeParams) {
+app.controller("Edit", function($scope, Model, $routeParams, $location) {
 	Model.load(function(startups) {
 		$scope.startups = startups;
 		var loadStartupToEdit = function() {
@@ -77,8 +78,15 @@ app.controller("Edit", function($scope, Model, $routeParams) {
 		
 		loadStartupToEdit();
 		$scope.commitEdit = function() {
-			Model.edit($scope.toEdit, function(startups) {
+			$scope.commiting = true;
+			Model.edit($scope.toEdit, function(error, startups) {
+				if(error) {
+					$scope.commiting = false;
+					return;
+				}
 				console.log("Edited successfully");
+				$scope.commiting = false;
+				$location.path("/");
 			});
 		};
 		
