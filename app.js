@@ -100,8 +100,11 @@ app.post("/data/startup", function(request, response) {
 	});
 	
 });
+app.get("/startup", function(request, response) {
+	response.render("startup/index");
+});
 app.get("/startup/:startupView", function(request, response) {
-	response.render("startup/" + request.params.startupView);
+	response.render("startup/partials/" + request.params.startupView);
 });
 app.set("/startups", function(request, response) {
 	

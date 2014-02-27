@@ -1,12 +1,12 @@
 var app = angular.module("epicDatabase", ["ngRoute"],
 function($routeProvider) {
 	$routeProvider.when("/:id/edit", {
-		templateUrl: "edit",
+		templateUrl: "/startup/edit",
 		controller: "Edit"			
 	});
 	
 	$routeProvider.otherwise({
-		templateUrl: "list",
+		templateUrl: "/startup/list",
 		controller: "StartupList"
 	});
 });
