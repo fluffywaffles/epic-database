@@ -94,7 +94,7 @@ app.controller("Edit", function($scope, Model, $routeParams) {
 			$scope.toEdit.industries.push("New industry");
 		};
 		
-		$scope.deleteIndustry = function() {
+		$scope.deleteIndustry = function(indexToDelete) {
 			$scope.toEdit.industries.splice(indexToDelete, 1);
 		};
 		
