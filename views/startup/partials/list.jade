@@ -1,14 +1,18 @@
-div(ng-hide="loaded")
-      p Loading startups
+div(ng-hide="loadedStartups")
+  p Loading ...
+p
+  a(href="#/add") Add New Startup  
 div(ng-repeat="(id, startup) in startups track by id")
   div
     h1 
       a(href="{{startup.website}}")
         | {{startup.name}}
     p
-      a(href="#/{{startup._id}}/edit")
-        | Edit  
-    img(ng-src="{{startup.bannerPhoto}}")
+    
+      button(ng-click="editStartup(startup)", ng-disabled="startup.disableModify") Edit
+      button(ng-click="deleteStartup(startup)", ng-disabled="startup.disableModify") Delete
+    p
+      img(ng-src="{{startup.bannerPhoto}}")
     h2 Founders
     p(ng-repeat="founder in startup.founders track by $index")
       | {{founder}}

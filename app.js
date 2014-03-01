@@ -79,27 +79,63 @@ app.get("/data/startup", function(request, response) {
 		if(err) {
 			response.send(500, "Error retrieving startups from DB");
 		}
-		response.send(startups);
+		setTimeout(function() {
+			response.send(startups);	
+		}, 1000);
+		
 	});
 });
-app.post("/data/startup", function(request, response) {
-	var toUpdate = request.body;
-	var Startup = require("./models/Startup");
-	//console.log(toUpdate);
-	var id = toUpdate._id;
-	delete toUpdate._id;
-	Startup.findByIdAndUpdate(id, toUpdate, function(err, updated) {
+
+var addOrEditStartupCallback = function(response) {
+	return function(err, updated) {
 		if(err) {
 			console.log(err);
 			response.send(400, "Error updating database");
 		} else {
 			console.log(updated);
-			response.send(200);
+			setTimeout(function() {
+				response.send(updated, 200);	
+			}, 1000);
+			
+		}
+	};
+};
+
+//THIS MUST COME BEFORE THE EDIT PATH!!
+app.post("/data/startup/new", function(request, response) {
+	var toAdd = request.body;
+	console.log(toAdd);
+	var Startup = require("./models/Startup");
+	Startup.create(toAdd, addOrEditStartupCallback(response));
+});
+
+app.post("/data/startup/:id", function(request, response) {
+	var toUpdate = request.body;
+	delete toUpdate._id;
+	var id = request.params.id;
+	var Startup = require("./models/Startup");
+	console.log(id);
+	console.log(toUpdate);
+	Startup.findByIdAndUpdate(id, toUpdate, addOrEditStartupCallback(response));
+});
+
+app.del("/data/startup/:id", function(request, response) {
+	var id = request.params.id;
+	var Startup = require("./models/Startup");
+	console.log(id);
+	Startup.remove({_id: id}, function(error) {
+		if(error) {
+			response.send("Error deleting", 404);
+		} else {
+			setTimeout(function() {
+				response.send(200);	
+			}, 1000);
 			
 		}
 	});
-	
 });
+
+
 app.get("/startup", function(request, response) {
 	response.render("startup/index");
 });
