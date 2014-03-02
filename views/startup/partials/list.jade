@@ -9,8 +9,8 @@ div(ng-repeat="(id, startup) in startups track by id")
         | {{startup.name}}
     p
     
-      button(ng-click="editStartup(startup)", ng-disabled="startup.disableModify") Edit
-      button(ng-click="deleteStartup(startup)", ng-disabled="startup.disableModify") Delete
+      button(class="btn btn-info", ng-click="editStartup(startup)", ng-disabled="startup.disableModify") Edit
+      button(class="btn btn-danger", ng-click="deleteStartup(startup)", ng-disabled="startup.disableModify") Delete
     p
       img(ng-src="{{startup.bannerPhoto}}")
     h2 Founders
@@ -37,5 +37,5 @@ div(ng-repeat="(id, startup) in startups track by id")
     p {{startup.details}}
     h2 Related Startups
     p(ng-repeat="related in startup.relatedStartups track by $index")
-      | {{related}}
+      a(href="{{related.website}}") {{related.name}}
     hr

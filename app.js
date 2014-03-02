@@ -10,6 +10,7 @@ var http = require('http');
 var path = require('path');
 var mongoose = require('mongoose');
 var passport = require('passport');
+var sass = require("node-sass");
 
 var app = express();
 
@@ -34,6 +35,12 @@ if ('development' == app.get('env')) {
 if ('production' == app.get('env')) {
 	app.use(express.errorHandler());
 }
+
+app.use(sass.middleware({
+	dest: __dirname + "/public/stylesheets",
+	src: __dirname + "/sass",
+	prefix: "/static/stylesheets"
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -72,6 +79,11 @@ if ('development' == app.get('env')) {
 app.use('/static', express.static(__dirname + '/public'));
 
 app.get('/', routes.index);
+
+var formatStartup = function(startup) {
+	
+};
+
 app.get("/data/startup", function(request, response) {
 	response.type("json");
 	var Startup = require("./models/Startup");
@@ -120,19 +132,25 @@ app.post("/data/startup/:id", function(request, response) {
 });
 
 app.del("/data/startup/:id", function(request, response) {
-	var id = request.params.id;
+	var id = new mongoose.Types.ObjectId(request.params.id);
 	var Startup = require("./models/Startup");
 	console.log(id);
 	Startup.remove({_id: id}, function(error) {
 		if(error) {
 			response.send("Error deleting", 404);
 		} else {
-			setTimeout(function() {
+			//Remove from any startups that have this as a related startup
+			Startup.update({relatedStartups: id}, {$pull: {relatedStartups: id}}, {multi: true}, function(error, numAffected, rawResponse) {
+				if(error) {
+					console.log(error);
+					response.send("Error deleting", 404);
+				}
+				console.log(numAffected);
 				response.send(200);	
-			}, 1000);
-			
+			});
 		}
 	});
+	
 });
 
 

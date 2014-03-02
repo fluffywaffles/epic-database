@@ -1,4 +1,4 @@
-var app = angular.module("epicDatabase", ["ngRoute"],
+var app = angular.module("epicDatabase", ["ngRoute", "ui.bootstrap"],
 function($routeProvider) {
 	$routeProvider.when("/:id/edit", {
 		templateUrl: "/startup/edit",
@@ -18,41 +18,61 @@ function($routeProvider) {
 app.factory("Startups", ["$http", function($http) {
 	var cachedStartups;
 	var onLoadList;
-	return {
-		list: function(onLoad) {
-			if(cachedStartups) {
-				console.log("Returning cached copy");
-				onLoad(cachedStartups);
-				return ;
-			}
-			if(onLoadList) {
-				console.log("Already downloading startups");
-				onLoadList.push(onLoad);
-				return;
-			}
-			console.log("Downloading startups");
-			onLoadList = [onLoad];
-			$http.get("/data/startup").success(function(data) {
-				cachedStartups = data.reduce(function(previousValue, element, index, array) {
-					previousValue[element._id] = element;
-					return previousValue;
-				}, {});
-				onLoadList.forEach(function(onLoad) {
-					onLoad(cachedStartups);
-				});
-				onLoadList = undefined;
+	
+	var list = function(onLoad, force) {
+		if(force) {
+			console.log("Force load list");
+		}
+		if(!force && cachedStartups) {
+			console.log("Returning cached copy");
+			onLoad(undefined, angular.copy(cachedStartups));
+			return;
+		}
+		if(onLoadList) {
+			console.log("Already downloading startups");
+			onLoadList.push(onLoad);
+			return;
+		}
+		console.log("Downloading startups");
+		onLoadList = [onLoad];
+		$http.get("/data/startup").success(function(data) {
+			cachedStartups = data.reduce(function(previousValue, element, index, array) {
+				previousValue[element._id] = element;
+				return previousValue;
+			}, {});
+			onLoadList.forEach(function(onLoad) {
+				onLoad(undefined, angular.copy(cachedStartups));
 			});
-		},
+			onLoadList = undefined;
+		});
+	};
+	
+	return {
+		list: function(onLoad) { list(onLoad, false); },
 		addOrEdit: function(startup, onDone) {
 			if(startup._id) {
 				var url = "/data/startup/" + startup._id;
 			} else {
 				var url = "/data/startup/new";
 			}
+			startup = angular.copy(startup);
+			if(startup.relatedStartups) {
+				startup.relatedStartups = startup.relatedStartups
+					.map(function(element) {
+						return element._id;
+					})
+					.filter(function(element) {
+						return !!element;
+					});
+			}
+			
+			console.log(startup);
+			
+			
 			$http.post(url, startup).success(function(committedStartup) {
 				console.log("success");
 				cachedStartups[committedStartup._id] = committedStartup;
-				onDone(undefined, committedStartup);
+				onDone(undefined, angular.copy(committedStartup));
 			}).error(function(data, status) {
 				console.log("error " + status);
 				onDone("Error", undefined);
@@ -62,7 +82,7 @@ app.factory("Startups", ["$http", function($http) {
 			$http.delete("/data/startup/" + startup._id, startup).success(function() {
 				console.log("success");
 				delete cachedStartups[startup._id];
-				onDone(undefined, cachedStartups);
+				list(onDone, true);
 			}).error(function(data, status) {
 				console.log("Error: " + data);
 				onDone("Error", undefined);
@@ -77,7 +97,14 @@ app.controller("Startup", function($scope) {
 
 app.controller("StartupList", function($scope, Startups, $location) {
 	$scope.loadedStartups = false;
-	Startups.list(function(startups) {
+	Startups.list(function(error, startups) {
+		angular.forEach(startups, function(startup) {
+			if(startup.relatedStartups) {
+				startup.relatedStartups = startup.relatedStartups.map(function(id) {
+					return startups[id];
+				});
+			}
+		});
 		$scope.startups = startups;
 		$scope.loadedStartups = true;
 		$scope.editStartup = function(startup) {
@@ -88,7 +115,6 @@ app.controller("StartupList", function($scope, Startups, $location) {
 			Startups.del(startup, function(error, startups) {
 				startup.disableModify = false;
 				if(error) {
-					
 				} else {
 					$scope.startups = startups;
 				}
@@ -100,7 +126,7 @@ app.controller("StartupList", function($scope, Startups, $location) {
 app.controller("Add", function($scope, Startups, $location) {
 	$scope.loadedStartups = false;
 	$scope.disableForm = true;
-	Startups.list(function(startups) {
+	Startups.list(function(error, startups) {
 		$scope.loadedStartups = true;
 		$scope.disableForm = false;
 		$scope.toEdit = {};
@@ -125,11 +151,19 @@ app.controller("Add", function($scope, Startups, $location) {
 app.controller("Edit", function($scope, Startups, $routeParams, $location) {
 	$scope.loadedStartups = false;
 	$scope.disableForm = true;
-	Startups.list(function(startups) {
+	Startups.list(function(error, startups) {
 		$scope.loadedStartups = true;
 		$scope.disableForm = false;
 		var loadStartupToEdit = function() {
 			$scope.toEdit = angular.copy(startups[$routeParams.id]);
+			$scope.toEdit.relatedStartups = $scope.toEdit.relatedStartups.map(function(id) {
+				var element = startups[id];
+				return {
+					name: element.name,
+					_id: element._id
+				};
+			});
+			console.log($scope.toEdit);
 		};
 		loadStartupToEdit();
 		$scope.commitEdit = function() {
@@ -152,7 +186,31 @@ app.controller("Edit", function($scope, Startups, $routeParams, $location) {
 	});
 });
 
-app.controller("StartupForm", function($scope) {
+app.controller("StartupForm", function($scope, Startups) {
+	Startups.list(function(error, startups) {
+		var startupTypeahead = [];
+		angular.forEach(startups, function(value, key) {
+			startupTypeahead.push({
+				name: value.name,
+				_id: value._id
+			});
+		});
+		$scope.startupTypeahead = startupTypeahead;
+	});
+	
+	$scope.excludeSelectedStartups = function(test) {
+		if(test._id == $scope.toEdit._id) {
+			return false;
+		}
+		return $scope.toEdit.relatedStartups.every(function(related) {
+			if(related && test._id == related._id) {
+				return false;
+			} else {
+				return true;
+			}
+		});
+	};
+	
 	$scope.addFounder = function() {
 		if(!$scope.toEdit.founders) {
 			$scope.toEdit.founders = [];
@@ -179,7 +237,7 @@ app.controller("StartupForm", function($scope) {
 		if(!$scope.toEdit.relatedStartups) {
 			$scope.toEdit.relatedStartups = [];
 		}
-		$scope.toEdit.relatedStartups.push("New related startup");
+		$scope.toEdit.relatedStartups.push("");
 	};
 	
 	$scope.deleteRelatedStartup = function(indexToDelete) {

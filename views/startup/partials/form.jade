@@ -88,7 +88,12 @@ table(ng-controller="StartupForm")
       table
         tr(ng-repeat="related in toEdit.relatedStartups track by $index")
           td
-            input(type="text", ng-model="toEdit.relatedStartups[$index]", ng-disabled="disableForm")
+            input(type="text",
+              ng-model="toEdit.relatedStartups[$index]",
+              ng-disabled="disableForm",
+              typeahead="startup as startup.name for startup in startupTypeahead | filter: $viewValue | filter: excludeSelectedStartups",
+              typeahead-editable="false",
+              placeholder="Type name of startup")
           td
             button(ng-click="deleteRelatedStartup($index)", ng-disabled="disableForm")
               | Delete
@@ -98,4 +103,7 @@ table(ng-controller="StartupForm")
               | Add Related Startup
           td
     td
-
+  tr
+    td
+      p(ng-repeat="startup in startupTypeahead")
+        | {{startup.name}}
