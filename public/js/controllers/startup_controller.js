@@ -20,12 +20,12 @@ app.factory("Stages", ["$http", function($http) {
 	return {
 		stages: function(onLoad) {
 			if(cachedStages) {
-				onLoad(undefined, cachedStages);
+				onLoad(undefined, angular.copy(cachedStages));
 				return;
 			}
 			$http.get("/data/stage").success(function(data) {
 				cachedStages = data;
-				onLoad(undefined, cachedStages);
+				onLoad(undefined, angular.copy(cachedStages));
 			});
 		}
 	};
@@ -141,7 +141,7 @@ app.controller("Startup", function($scope) {
 	
 });
 
-app.controller("StartupList", function($scope, Startups, $location) {
+app.controller("StartupList", function($scope, Startups, Stages, $location) {
 	//One level load (related startups inside related startups are not loaded)
 	var loadRelatedStartups = function(startups) {
 		startups.forEach(function(startup) {
@@ -153,26 +153,47 @@ app.controller("StartupList", function($scope, Startups, $location) {
 		});
 	};
 	$scope.loadedStartups = false;
-	Startups.list(function(error, startups) {
-		loadRelatedStartups(startups);
-		$scope.startups = startups;
-		$scope.loadedStartups = true;
-		$scope.editStartup = function(startup) {
-			$location.path("/" + startup._id + "/edit");
-		};
-		$scope.deleteStartup = function(startup) {
-			startup.disableModify = true;
-			Startups.del(startup, function(error, startups) {
-				startup.disableModify = false;
-				if(error) {
-					
-				} else {
-					loadRelatedStartups(startups);
-					$scope.startups = startups;
-				}
+	Stages.stages(function(error, stages) {
+		Startups.list(function(error, startups) {
+			loadRelatedStartups(startups);
+			$scope.startups = startups;
+			$scope.loadedStartups = true;
+			stages.forEach(function(stage) {
+				stage.enabled = true;
 			});
-		};
+			$scope.stages = stages;
+			$scope.editStartup = function(startup) {
+				$location.path("/" + startup._id + "/edit");
+			};
+			$scope.deleteStartup = function(startup) {
+				startup.disableModify = true;
+				Startups.del(startup, function(error, startups) {
+					startup.disableModify = false;
+					if(error) {
+						
+					} else {
+						loadRelatedStartups(startups);
+						$scope.startups = startups;
+					}
+				});
+			};
+			
+			$scope.updateFilter = function() {
+				console.log("Update filter");
+			};
+			
+			$scope.startupFilter = function(startup) {
+				var stageAllowed = $scope.stages.some(function(stage) {
+					console.log(stage._id);
+					return stage.enabled && stage._id == startup.stage._id;
+				});
+				
+				return stageAllowed;
+				
+			};
+		});
 	});
+	
 });
 
 app.controller("Add", function($scope, Startups, $location) {

@@ -3,8 +3,13 @@ div(ng-hide="loadedStartups")
 p
   a(href="#/add") Add New Startup
 p
-  input(class="form-control", type="text", placeholder="Search startups", ng-model="searchStartups")  
-div(ng-repeat="startup in (startups | filter:searchStartups | orderBy:'+name')")
+  input(class="form-control", type="text", placeholder="Search startups", ng-model="searchStartups")
+p Filters
+div(class="checkbox", ng-repeat="stage in stages")
+  label
+    input(type="checkbox", ng-model="stage.enabled", ng-change="updateFilter()")
+    | {{stage.name}}
+div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilter | orderBy:'+name')")
   div
     h1 
       a(href="{{startup.website}}")
