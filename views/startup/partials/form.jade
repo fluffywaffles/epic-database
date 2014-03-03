@@ -57,7 +57,7 @@ div(ng-controller="StartupForm")
   div(class="form-group")
     label Stage
     p
-      select(class="form-control", ng-model="toEdit.stage", ng-options="stage.name for stage in (stages | orderBy: 'rank')")
+      select(class="form-control", ng-required="true", ng-model="toEdit.stage", ng-options="stage.name for stage in stages")
   div(class="form-group")
     label Location
     input(class="form-control", type="text", name="location", ng-model="toEdit.location", ng-disabled="disableForm")
@@ -94,3 +94,4 @@ div(ng-controller="StartupForm")
             placeholder="Type name of startup")
     div(class="form-group")
       button(class="btn btn-success", ng-click="addRelatedStartup()", ng-disabled="disableForm") Add Related Startup
+

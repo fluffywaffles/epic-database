@@ -179,17 +179,25 @@ app.controller("StartupList", function($scope, Startups, Stages, $location) {
 			};
 			
 			$scope.updateFilter = function() {
-				console.log("Update filter");
+				
+			};
+			
+			$scope.selectAllStageFilters = function() {
+				$scope.stages.forEach(function(stage) {
+					stage.enabled = true;
+				});
 			};
 			
 			$scope.startupFilter = function(startup) {
+				var allStages = $scope.stages.every(function(stage) {
+					return stage.enabled;
+				});
+				
 				var stageAllowed = $scope.stages.some(function(stage) {
-					console.log(stage._id);
-					return stage.enabled && stage._id == startup.stage._id;
+					return allStages || stage.enabled && startup.stage && startup.stage._id == stage._id;
 				});
 				
 				return stageAllowed;
-				
 			};
 		});
 	});
@@ -232,11 +240,21 @@ app.controller("Edit", function($scope, Startups, Stages, $routeParams, $locatio
 			$scope.loadedStartups = true;
 			$scope.disableForm = false;
 			$scope.stages = stages;
+			
 			var loadStartupToEdit = function() {
 				$scope.toEdit = Startups.getById($routeParams.id);
 				$scope.toEdit.relatedStartups = $scope.toEdit.relatedStartups.map(function(id) {
 					return Startups.getById(id);
 				});
+				if($scope.toEdit.stage) {
+					//The objects must be the same for initial selection
+					stages.forEach(function(stage) {
+						if(stage._id == $scope.toEdit.stage._id) {
+							$scope.toEdit.stage = stage;
+						}					
+					});
+				}
+				
 				console.log($scope.toEdit);
 			};
 			loadStartupToEdit();

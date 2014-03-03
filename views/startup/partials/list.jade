@@ -4,11 +4,13 @@ p
   a(href="#/add") Add New Startup
 p
   input(class="form-control", type="text", placeholder="Search startups", ng-model="searchStartups")
-p Filters
+p Filter by stage
 div(class="checkbox", ng-repeat="stage in stages")
   label
     input(type="checkbox", ng-model="stage.enabled", ng-change="updateFilter()")
     | {{stage.name}}
+p
+  a(href="#", ng-click="selectAllStageFilters()") Select All
 div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilter | orderBy:'+name')")
   div
     h1 
