@@ -26,7 +26,7 @@ div(ng-repeat="startup in (startups | filter:searchStartups | orderBy:'+name')")
     h2 Mission
     p {{startup.mission}}
     h2 Stage
-    p {{startup.stage}}
+    p {{startup.stage.name}}
     h2 Location
     p {{startup.location}}
     h2 Phone Number

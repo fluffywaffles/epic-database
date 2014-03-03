@@ -1,35 +1,36 @@
 var mongoose = require("mongoose");
 
 module.exports = function(app) {	
+	
+	var populateStartup = function(query) {
+		return query.populate("founders stage");
+	};
+	
+	
 	app.get("/data/startup", function(request, response) {
 		response.type("json");
 		var Startup = mongoose.model("Startup");
-		Startup
-			.find({})
-			.populate("founders").exec(function(err, startups) {
+		populateStartup(Startup.find({}))
+			.exec(function(err, startups) {
 				if(err) {
+					console.log(err);
 					response.send(500, "Error retrieving startups from DB");
 				}
-				setTimeout(function() {
-					response.send(startups);	
-				}, 1000);
+				response.send(startups);	
 				
 			});
 	});
 	
-	var addOrEditStartupCallback = function(response) {
-		return function(err, updated) {
+	var addOrEditStartupCallback = function(query, response) {
+		return populateStartup(query).exec(function(err, updated) {
 			if(err) {
 				console.log(err);
 				response.send(400, "Error updating database");
 			} else {
 				console.log(updated);
-				setTimeout(function() {
-					response.send(updated, 200);	
-				}, 1000);
-				
+				response.send(updated, 200);
 			}
-		};
+		});
 	};
 	
 	//THIS MUST COME BEFORE THE EDIT PATH!!
@@ -37,7 +38,7 @@ module.exports = function(app) {
 		var toAdd = request.body;
 		console.log(toAdd);
 		var Startup = mongoose.model("Startup");
-		Startup.create(toAdd).populate("founders").exec(addOrEditStartupCallback(response));
+		addOrEditStartupCallback(Startup.create(toAdd), response);
 	});
 	
 	app.post("/data/startup/:id", function(request, response) {
@@ -50,7 +51,7 @@ module.exports = function(app) {
 		//console.log(toUpdate);
 		
 		var onFoundersUpdated = function() {
-			Startup.findByIdAndUpdate(id, toUpdate).populate("founders").exec(addOrEditStartupCallback(response));
+			addOrEditStartupCallback(Startup.findByIdAndUpdate(id, toUpdate), response);
 		};
 		
 		if(toUpdate.founders && toUpdate.founders.length > 0) {

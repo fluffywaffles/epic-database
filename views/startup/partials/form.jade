@@ -56,7 +56,8 @@ div(ng-controller="StartupForm")
     textarea(class="form-control", name="mission", ng-model="toEdit.mission", ng-disabled="disableForm")
   div(class="form-group")
     label Stage
-    input(class="form-control", type="text", name="stage", ng-model="toEdit.stage", ng-disabled="disableForm")
+    p
+      select(class="form-control", ng-model="toEdit.stage", ng-options="stage.name for stage in (stages | orderBy: 'rank')")
   div(class="form-group")
     label Location
     input(class="form-control", type="text", name="location", ng-model="toEdit.location", ng-disabled="disableForm")

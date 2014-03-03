@@ -59,8 +59,6 @@ var uristring =
 	
 	
 var onDatabaseConnected = function() {
-	//Initialize model schema
-	require("./models/models");
 	//require('./util/parsecsv').parse();
 	
 	
@@ -75,6 +73,7 @@ var onDatabaseConnected = function() {
 	
 	require("./routes/data/startup")(app);
 	require("./routes/data/person")(app);
+	require("./routes/data/stage")(app);
 	
 	app.get("/startup", function(request, response) {
 		response.render("startup/index");
@@ -96,13 +95,15 @@ var onDatabaseConnected = function() {
 	});
 	
 };
-	
-//This should probably happen before starting the http server
+
+
 mongoose.connect(uristring, function (err, res) {
 	if (err) {
 		console.log ('ERROR connecting to: ' + uristring + '. ' + err);
 	} else {
 		console.log ('Succeeded connecting to: ' + uristring);
+		//Initialize model schema
+		require("./models/models");
 		onDatabaseConnected();
 	}
 });

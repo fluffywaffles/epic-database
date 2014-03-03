@@ -18,7 +18,10 @@ var startup = Schema({
 	northwesternConnections: [{ name: String, alum: String }],
 	email: String,
 	phone: String,
-	stage: String,
+	stage: {
+		type: Schema.Types.ObjectId,
+		ref: "Stage"
+		},
 	location: String,
 	website: String,
 	media: [String],

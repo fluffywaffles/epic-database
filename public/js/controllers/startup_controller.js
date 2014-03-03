@@ -15,6 +15,22 @@ function($routeProvider) {
 	
 });
 
+app.factory("Stages", ["$http", function($http) {
+	var cachedStages;
+	return {
+		stages: function(onLoad) {
+			if(cachedStages) {
+				onLoad(undefined, cachedStages);
+				return;
+			}
+			$http.get("/data/stage").success(function(data) {
+				cachedStages = data;
+				onLoad(undefined, cachedStages);
+			});
+		}
+	};
+}]);
+
 app.factory("Startups", ["$http", function($http) {
 	var cachedStartups;
 	var onLoadList;
@@ -87,6 +103,10 @@ app.factory("Startups", ["$http", function($http) {
 				startup.media = startup.media.filter(function(medium) {
 					return !!medium;
 				});
+			}
+			
+			if(startup.stage) {
+				startup.stage = startup.stage._id;
 			}
 			
 			console.log(startup);
@@ -180,38 +200,41 @@ app.controller("Add", function($scope, Startups, $location) {
 	});
 });
 
-app.controller("Edit", function($scope, Startups, $routeParams, $location) {
+app.controller("Edit", function($scope, Startups, Stages, $routeParams, $location) {
 	$scope.loadedStartups = false;
 	$scope.disableForm = true;
 	Startups.list(function(error, startups) {
-		$scope.loadedStartups = true;
-		$scope.disableForm = false;
-		var loadStartupToEdit = function() {
-			$scope.toEdit = Startups.getById($routeParams.id);
-			$scope.toEdit.relatedStartups = $scope.toEdit.relatedStartups.map(function(id) {
-				return Startups.getById(id);
-			});
-			console.log($scope.toEdit);
-		};
-		loadStartupToEdit();
-		$scope.commitEdit = function() {
-			console.log($scope.toEdit.founders);
-			$scope.disableForm = true;
-			$scope.saving = true;
-			Startups.addOrEdit($scope.toEdit, function(error, startup) {
-				if(error) {
+		Stages.stages(function(error, stages) {
+			$scope.loadedStartups = true;
+			$scope.disableForm = false;
+			$scope.stages = stages;
+			var loadStartupToEdit = function() {
+				$scope.toEdit = Startups.getById($routeParams.id);
+				$scope.toEdit.relatedStartups = $scope.toEdit.relatedStartups.map(function(id) {
+					return Startups.getById(id);
+				});
+				console.log($scope.toEdit);
+			};
+			loadStartupToEdit();
+			$scope.commitEdit = function() {
+				console.log($scope.toEdit);
+				$scope.disableForm = true;
+				$scope.saving = true;
+				Startups.addOrEdit($scope.toEdit, function(error, startup) {
+					if(error) {
+						$scope.disableForm = false;
+						$scope.saving = false;
+						return;
+					}
+					console.log("Edited successfully");
 					$scope.disableForm = false;
 					$scope.saving = false;
-					return;
-				}
-				console.log("Edited successfully");
-				$scope.disableForm = false;
-				$scope.saving = false;
-				$location.path("/");
-			});
-		};
-		
-		$scope.revertEdit = loadStartupToEdit;
+					$location.path("/");
+				});
+			};
+			$scope.revertEdit = loadStartupToEdit;
+			
+		});
 	});
 });
 
