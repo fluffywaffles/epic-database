@@ -1,8 +1,10 @@
 div(ng-hide="loadedStartups")
   p Loading ...
 p
-  a(href="#/add") Add New Startup  
-div(ng-repeat="(id, startup) in startups track by id")
+  a(href="#/add") Add New Startup
+p
+  input(class="form-control", type="text", placeholder="Search startups", ng-model="searchStartups")  
+div(ng-repeat="startup in (startups | filter:searchStartups | orderBy:'+name')")
   div
     h1 
       a(href="{{startup.website}}")
@@ -15,7 +17,7 @@ div(ng-repeat="(id, startup) in startups track by id")
       img(ng-src="{{startup.bannerPhoto}}")
     h2 Founders
     p(ng-repeat="founder in startup.founders track by $index")
-      | {{founder}}
+      | {{founder.name}}
     h2 Industries
     p(ng-repeat="industry in startup.industries track by $index")
       | {{industry}}

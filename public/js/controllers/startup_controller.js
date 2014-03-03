@@ -19,13 +19,21 @@ app.factory("Startups", ["$http", function($http) {
 	var cachedStartups;
 	var onLoadList;
 	
+	var copyStartupsToArray = function() {
+		var arr = [];
+		angular.forEach(cachedStartups, function(element) {
+			arr.push(angular.copy(element));
+		});
+		return arr; 
+	};
+	
 	var list = function(onLoad, force) {
 		if(force) {
 			console.log("Force load list");
 		}
 		if(!force && cachedStartups) {
 			console.log("Returning cached copy");
-			onLoad(undefined, angular.copy(cachedStartups));
+			onLoad(undefined, copyStartupsToArray());
 			return;
 		}
 		if(onLoadList) {
@@ -36,12 +44,13 @@ app.factory("Startups", ["$http", function($http) {
 		console.log("Downloading startups");
 		onLoadList = [onLoad];
 		$http.get("/data/startup").success(function(data) {
+			console.log(data);
 			cachedStartups = data.reduce(function(previousValue, element, index, array) {
 				previousValue[element._id] = element;
 				return previousValue;
 			}, {});
 			onLoadList.forEach(function(onLoad) {
-				onLoad(undefined, angular.copy(cachedStartups));
+				onLoad(undefined, copyStartupsToArray());
 			});
 			onLoadList = undefined;
 		});
@@ -65,6 +74,14 @@ app.factory("Startups", ["$http", function($http) {
 						return !!element;
 					});
 			}
+			if(startup.founders) {
+				startup.founders = startup.founders.filter(function(element) {
+					if(!element.name && !element.value) {
+						return false;
+					}
+					return true;
+				});
+			}
 			
 			console.log(startup);
 			
@@ -87,6 +104,9 @@ app.factory("Startups", ["$http", function($http) {
 				console.log("Error: " + data);
 				onDone("Error", undefined);
 			});
+		},
+		getById: function(id) {
+			return angular.copy(cachedStartups[id]);
 		}
 	};
 }]);
@@ -96,15 +116,19 @@ app.controller("Startup", function($scope) {
 });
 
 app.controller("StartupList", function($scope, Startups, $location) {
-	$scope.loadedStartups = false;
-	Startups.list(function(error, startups) {
-		angular.forEach(startups, function(startup) {
+	//One level load (related startups inside related startups are not loaded)
+	var loadRelatedStartups = function(startups) {
+		startups.forEach(function(startup) {
 			if(startup.relatedStartups) {
 				startup.relatedStartups = startup.relatedStartups.map(function(id) {
-					return startups[id];
+					return Startups.getById(id); 
 				});
 			}
 		});
+	};
+	$scope.loadedStartups = false;
+	Startups.list(function(error, startups) {
+		loadRelatedStartups(startups);
 		$scope.startups = startups;
 		$scope.loadedStartups = true;
 		$scope.editStartup = function(startup) {
@@ -115,7 +139,9 @@ app.controller("StartupList", function($scope, Startups, $location) {
 			Startups.del(startup, function(error, startups) {
 				startup.disableModify = false;
 				if(error) {
+					
 				} else {
+					loadRelatedStartups(startups);
 					$scope.startups = startups;
 				}
 			});
@@ -155,18 +181,15 @@ app.controller("Edit", function($scope, Startups, $routeParams, $location) {
 		$scope.loadedStartups = true;
 		$scope.disableForm = false;
 		var loadStartupToEdit = function() {
-			$scope.toEdit = angular.copy(startups[$routeParams.id]);
+			$scope.toEdit = Startups.getById($routeParams.id);
 			$scope.toEdit.relatedStartups = $scope.toEdit.relatedStartups.map(function(id) {
-				var element = startups[id];
-				return {
-					name: element.name,
-					_id: element._id
-				};
+				return Startups.getById(id);
 			});
 			console.log($scope.toEdit);
 		};
 		loadStartupToEdit();
 		$scope.commitEdit = function() {
+			console.log($scope.toEdit.founders);
 			$scope.disableForm = true;
 			$scope.saving = true;
 			Startups.addOrEdit($scope.toEdit, function(error, startup) {
@@ -186,16 +209,9 @@ app.controller("Edit", function($scope, Startups, $routeParams, $location) {
 	});
 });
 
-app.controller("StartupForm", function($scope, Startups) {
+app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 	Startups.list(function(error, startups) {
-		var startupTypeahead = [];
-		angular.forEach(startups, function(value, key) {
-			startupTypeahead.push({
-				name: value.name,
-				_id: value._id
-			});
-		});
-		$scope.startupTypeahead = startupTypeahead;
+		$scope.startups = startups;
 	});
 	
 	$scope.excludeSelectedStartups = function(test) {
@@ -211,11 +227,46 @@ app.controller("StartupForm", function($scope, Startups) {
 		});
 	};
 	
+	$scope.searchPeople = function(searchText) {
+		//Need to do serverside filtering
+		return $http.get("/data/person").then(function(response) {
+			//For reasons I don't understand, angular typeahead will not filter results from a promise
+			var results = response.data;
+			if(!results) {
+				results = [];
+			}
+			return $filter("filter")(results, searchText);
+		});
+	};
+	
+	$scope.founderSelected = function(index, model) {
+		console.log(index);
+		console.log(model);
+		$scope.toEdit.founders[index] = model;
+	};
+	
+	$scope.founderNameChanged = function(index) {
+		
+		if($scope.toEdit.founders[index]._id) {
+			$scope.toEdit.founders[index] = {name: $scope.toEdit.founders[index].name, email: ""};
+		}
+	};
+	
+	$scope.founderEmailChanged = function(index) {
+		//If we previously had an existing user selected and now we don't
+		if($scope.toEdit.founders[index]._id) {
+			$scope.toEdit.founders[index] = {name: "", email: $scope.toEdit.founders[index].email};
+		}
+		
+	};
+	
+	
 	$scope.addFounder = function() {
 		if(!$scope.toEdit.founders) {
 			$scope.toEdit.founders = [];
 		}
-		$scope.toEdit.founders.push("New Founder");
+		$scope.toEdit.founders.push({});
+		console.log($scope.toEdit.founders);
 	};
 	
 	$scope.deleteFounder = function(indexToDelete) {
@@ -226,7 +277,7 @@ app.controller("StartupForm", function($scope, Startups) {
 		if(!$scope.toEdit.industries) {
 			$scope.toEdit.industries = [];
 		}
-		$scope.toEdit.industries.push("New industry");
+		$scope.toEdit.industries.push("");
 	};
 	
 	$scope.deleteIndustry = function(indexToDelete) {

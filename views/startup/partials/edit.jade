@@ -1,8 +1,8 @@
 h1 Edit Startup
 ng-include(src="'/startup/form'")
-button(ng-click="commitEdit()", ng-disabled="disableForm")
+button(class="btn btn-success", ng-click="commitEdit()", ng-disabled="disableForm")
   | Save Changes
-button(ng-click="revertEdit()", ng-disabled="disableForm")
+button(class="btn btn-warning", ng-click="revertEdit()", ng-disabled="disableForm")
   | Revert Changes
 p(ng-hide="loadedStartups")
   | Loading ...

@@ -1,6 +1,6 @@
 h1 New Startup
 ng-include(src="'/startup/form'")
-button(ng-click="saveNew()", ng-disabled="disableForm")
+button(class="btn btn-success", ng-click="saveNew()", ng-disabled="disableForm")
   | Save New Startup
 p(ng-hide="loadedStartups")
   | Loading ...

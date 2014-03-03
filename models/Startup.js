@@ -2,10 +2,15 @@ var mongoose = require('mongoose')
 		, Schema = mongoose.Schema
 		, passportLocalMongoose = require('passport-local-mongoose');
 
+
+
 var startup = Schema({
 	raw: [String],
 	name: String,
-	founders: [String],
+	founders: [{
+		type: Schema.Types.ObjectId,
+		ref: "Person"
+		}],
 	tilePhoto: String,
 	bannerPhoto: String,
 	mission: String,
@@ -20,5 +25,4 @@ var startup = Schema({
 	relatedStartups: [Schema.Types.ObjectId],
 	details: String
 });
-
-module.exports = mongoose.model('Startup', startup);
+mongoose.model('Startup', startup);

@@ -1,109 +1,87 @@
-table(ng-controller="StartupForm")
-  tr
-    td Name:
-    td
-      input(type="text", name="name", ng-model="toEdit.name", ng-disabled="disableForm")
-    td
-  tr
-    td Website:
-    td
-      input(type="text", name="website", ng-model="toEdit.website", ng-disabled="disableForm")
-    td
-  tr
-    td Banner Photo:
-    td
-      input(type="text", name="bannerPhoto", ng-model="toEdit.bannerPhoto", ng-disabled="disableForm")
-    td
-  tr
-    td Founders:
-    td
-      table
-        tr(ng-repeat="founder in toEdit.founders track by $index")
-          td
-            input(type="text", ng-model="toEdit.founders[$index]", ng-disabled="disableForm")
-          td
-            button(ng-click="deleteFounder($index)", ng-disabled="disableForm")
-              | Delete
-        tr
-          td
-            button(ng-click="addFounder()", ng-disabled="disableForm")
-              | Add Founder
-          td
-     td
-      
-  tr
-    td Industries:
-    td
-      table
-        tr(ng-repeat="industry in toEdit.industries track by $index")
-          td
-            input(type="text", ng-model="toEdit.industries[$index]", ng-disabled="disableForm")
-          td
-            button(ng-click="deleteIndustry($index)", ng-disabled="disableForm")
-              | Delete
-        tr
-          td
-            button(ng-click="addIndustry()", ng-disabled="disableForm")
-              | Add Industry
-          td
-    td
-  tr
-    td Email Address:
-    td
-      input(type="text", name="email", ng-model="toEdit.email", ng-disabled="disableForm")
-    td
-  tr
-    td Mission:
-    td
-      textarea(name="mission", ng-model="toEdit.mission", ng-disabled="disableForm")
-    td
-  tr
-    td Stage:
-    td
-      input(type="text", name="stage", ng-model="toEdit.stage", ng-disabled="disableForm")
-    td
-  tr
-    td Location:
-    td
-      input(type="text", name="location", ng-model="toEdit.location", ng-disabled="disableForm")
-    td
-  tr
-    td Phone Number:
-    td
-      input(type="text", name="phone", ng-model="toEdit.phone", ng-disabled="disableForm")
-    td
-  tr
-    td Media: 
-    td
-      input(type="text", name="media", ng-model="toEdit.media", ng-disabled="disableForm")
-    td
-  tr
-    td Details:
-    td
-      textarea(name="details", ng-model="toEdit.details", ng-disabled="disableForm")
-    td
-  tr
-    td Related Startups: 
-    td
-      table
-        tr(ng-repeat="related in toEdit.relatedStartups track by $index")
-          td
-            input(type="text",
-              ng-model="toEdit.relatedStartups[$index]",
-              ng-disabled="disableForm",
-              typeahead="startup as startup.name for startup in startupTypeahead | filter: $viewValue | filter: excludeSelectedStartups",
-              typeahead-editable="false",
-              placeholder="Type name of startup")
-          td
-            button(ng-click="deleteRelatedStartup($index)", ng-disabled="disableForm")
-              | Delete
-        tr
-          td
-            button(ng-click="addRelatedStartup()", ng-disabled="disableForm")
-              | Add Related Startup
-          td
-    td
-  tr
-    td
-      p(ng-repeat="startup in startupTypeahead")
-        | {{startup.name}}
+div(ng-controller="StartupForm")
+  div(class="form-group")
+    label Name
+    input(class="form-control", type="text", name="name", ng-model="toEdit.name", ng-disabled="disableForm")
+  div(class="form-group")
+    label Website
+    input(class="form-control", type="text", name="website", ng-model="toEdit.website", ng-disabled="disableForm")
+  div(class="form-group")
+    label Banner Photo
+    input(class="form-control", type="text", name="bannerPhoto", ng-model="toEdit.bannerPhoto", ng-disabled="disableForm")
+  div
+    label Founders
+    table(class="form-group", ng-repeat="founder in toEdit.founders track by $index")
+      tr
+        td
+          button(class="btn btn-danger", ng-click="deleteFounder($index)", ng-disabled="disableForm") Delete
+        td(style="width: 50%")
+          input(
+            placeholder="Type name of founder",
+            class="form-control",
+            type="text",
+            ng-model="founder.name",
+            ng-disabled="disableForm",
+            typeahead="result as result.name for result in searchPeople($viewValue)",
+            typeahead-on-select="founderSelected($index, $model)"
+            ng-change="founderNameChanged($index)"
+            )
+        td(style="width: 50%")
+          input(
+            placeholder="Type name of founder",
+            class="form-control",
+            type="text",
+            ng-model="founder.email",
+            ng-disabled="disableForm",
+            typeahead="result as result.email for result in searchPeople($viewValue)",
+            typeahead-on-select="founderSelected($index, $model)",
+            ng-change="founderEmailChanged($index)"
+            )
+    div(class="form-group")
+      button(class="btn btn-success", ng-click="addFounder()", ng-disabled="disableForm") Add Founder 
+  div(class="form-group")
+    label Industries
+    table(class="form-group", ng-repeat="industry in toEdit.industries track by $index")
+      tr
+        td
+          button(class="btn btn-danger", ng-click="deleteIndustry($index)", ng-disabled="disableForm") Delete
+        td(style="width: 100%;")
+          input(placeholder="Type name of industry", class="form-control", type="text", ng-model="toEdit.industries[$index]", ng-disabled="disableForm")
+    div(class="form-group")
+      button(class="btn btn-success", ng-click="addIndustry()", ng-disabled="disableForm") Add Industry
+  div(class="form-group")
+    label Email Address
+    input(class="form-control", type="text", name="email", ng-model="toEdit.email", ng-disabled="disableForm")
+  div(class="form-group")
+    label Mission
+    textarea(class="form-control", name="mission", ng-model="toEdit.mission", ng-disabled="disableForm")
+  div(class="form-group")
+    label Stage
+    input(class="form-control", type="text", name="stage", ng-model="toEdit.stage", ng-disabled="disableForm")
+  div(class="form-group")
+    label Location
+    input(class="form-control", type="text", name="location", ng-model="toEdit.location", ng-disabled="disableForm")
+  div(class="form-group")
+    label Phone Number
+    input(class="form-control", type="text", name="phone", ng-model="toEdit.phone", ng-disabled="disableForm")
+  div(class="form-group")
+    label Media
+    input(class="form-control", type="text", name="media", ng-model="toEdit.media", ng-disabled="disableForm")
+  div(class="form-group")
+    label Details
+    textarea(class="form-control", name="details", ng-model="toEdit.details", ng-disabled="disableForm")
+  div(class="form-group")
+    label Related Startups
+    table(class="form-group", ng-repeat="related in toEdit.relatedStartups track by $index")
+      tr
+        td
+          button(class="btn btn-danger", ng-click="deleteRelatedStartup($index)", ng-disabled="disableForm") Delete
+        td(style="width: 100%;")
+          input(class="form-control",
+            type="text",
+            ng-model="toEdit.relatedStartups[$index]",
+            ng-disabled="disableForm",
+            typeahead="startup as startup.name for startup in startups | filter: $viewValue | filter: excludeSelectedStartups",
+            typeahead-editable="false",
+            placeholder="Type name of startup")
+    div(class="form-group")
+      button(class="btn btn-success", ng-click="addRelatedStartup()", ng-disabled="disableForm") Add Related Startup
