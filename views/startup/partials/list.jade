@@ -9,9 +9,16 @@ div(class="checkbox", ng-repeat="stage in stages")
   label
     input(type="checkbox", ng-model="stage.enabled", ng-change="updateFilter()")
     | {{stage.name}}
-p
-  a(href="#", ng-click="selectAllStageFilters()") Select All
-div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilter | orderBy:'+name')")
+p(ng-click="selectAllStageFilters()")
+  a(style="cursor: pointer;") Select All
+p Filter by industry
+div(class="checkbox", ng-repeat="industry in industries")
+  label
+    input(type="checkbox", ng-model="industry.enabled", ng-change="updateFilter()")
+    | {{industry.name}}
+p(ng-click="selectAllIndustryFilters()")
+  a(style="cursor: pointer;") Select All
+div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilter | filter:industryFilter | orderBy:'+name')")
   div
     h1 
       a(href="{{startup.website}}")
@@ -27,7 +34,7 @@ div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilt
       | {{founder.name}}
     h2 Industries
     p(ng-repeat="industry in startup.industries track by $index")
-      | {{industry}}
+      | {{industry.name}}
     h2 Email Address
     p {{startup.email}}
     h2 Mission

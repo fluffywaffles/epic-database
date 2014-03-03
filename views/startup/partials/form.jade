@@ -45,7 +45,16 @@ div(ng-controller="StartupForm")
         td
           button(class="btn btn-danger", ng-click="deleteIndustry($index)", ng-disabled="disableForm") Delete
         td(style="width: 100%;")
-          input(placeholder="Type name of industry", class="form-control", type="text", ng-model="toEdit.industries[$index]", ng-disabled="disableForm")
+          input(
+            placeholder="Type name of industry",
+            class="form-control",
+            type="text",
+            ng-model="industry.name",
+            ng-disabled="disableForm",
+            typeahead="industry as industry.name for industry in searchIndustries($viewValue)",
+            typeahead-on-select="industrySelected($index, $model)",
+            ng-change="industryChanged($index)"
+            )
     div(class="form-group")
       button(class="btn btn-success", ng-click="addIndustry()", ng-disabled="disableForm") Add Industry
   div(class="form-group")

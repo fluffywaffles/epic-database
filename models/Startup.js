@@ -14,7 +14,10 @@ var startup = Schema({
 	tilePhoto: String,
 	bannerPhoto: String,
 	mission: String,
-	industries: [String],
+	industries: [{
+		type: Schema.Types.ObjectId,
+		ref: "Industry"
+	}],
 	northwesternConnections: [{ name: String, alum: String }],
 	email: String,
 	phone: String,

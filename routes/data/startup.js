@@ -3,7 +3,7 @@ var mongoose = require("mongoose");
 module.exports = function(app) {	
 	
 	var populateStartup = function(query) {
-		return query.populate("founders stage");
+		return query.populate("founders stage industries");
 	};
 	
 	
@@ -55,18 +55,54 @@ module.exports = function(app) {
 		var id = request.params.id;
 		var Startup = mongoose.model("Startup");
 		var Person = mongoose.model("Person");
+		var Industry = mongoose.model("Industry");
 		//console.log(id);
 		//console.log(toUpdate);
 		
+		
 		var onFoundersUpdated = function() {
-			addOrEditStartupCallback(Startup.findByIdAndUpdate(id, toUpdate), response);
+			
+			var onIndustriesUpdated = function() {
+				addOrEditStartupCallback(Startup.findByIdAndUpdate(id, toUpdate), response);
+			};
+			
+			if(toUpdate.industries && toUpdate.industries.length > 0) {
+				var count = 0;
+				var industryIdMap = [];
+				var oneDone = function() {
+					count++;
+					if(count == toUpdate.industries.length) {
+						toUpdate.industries = industryIdMap;
+						onIndustriesUpdated();
+					}
+				};
+				
+				toUpdate.industries.forEach(function(industry, index) {
+					if(industry._id) {
+						industryIdMap[index] = industry._id;
+						oneDone();
+					} else {
+						Industry.create(industry, function(error, newIndustry) {
+							if(error) {
+								console.log("Error with new person");
+								response.send(404);
+							} else {
+								industryIdMap[index] = newIndustry._id;
+								oneDone();
+							}
+						});
+					}
+				});
+			} else {
+				onIndustriesUpdated();
+			}
+			
 		};
 		
 		if(toUpdate.founders && toUpdate.founders.length > 0) {
-			founderIdMap = [];
+			var founderIdMap = [];
 			var count = 0;
 			var oneDone = function() {
-				console.log("One done");
 				count++;
 				if(count == toUpdate.founders.length) {
 					toUpdate.founders = founderIdMap;

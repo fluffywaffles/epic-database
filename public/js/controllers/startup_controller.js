@@ -31,6 +31,23 @@ app.factory("Stages", ["$http", function($http) {
 	};
 }]);
 
+
+app.factory("Industries", ["$http", function($http) {
+	var cachedIndustries;
+	return {
+		industries: function(onLoad) {
+			if(cachedIndustries) {
+				onLoad(undefined, angular.copy(cachedIndustries));
+				return;
+			}
+			$http.get("/data/industry").success(function(data) {
+				cachedIndustries = data;
+				onLoad(undefined, angular.copy(cachedIndustries));
+			});
+		}
+	};
+}]);
+
 app.factory("Startups", ["$http", function($http) {
 	var cachedStartups;
 	var onLoadList;
@@ -98,6 +115,11 @@ app.factory("Startups", ["$http", function($http) {
 					return true;
 				});
 			}
+			if(startup.industries) {
+				startup.industries = startup.industries.filter(function(element) {
+					return element.name.length > 0;
+				});
+			}
 			
 			if(startup.media) {
 				startup.media = startup.media.filter(function(medium) {
@@ -141,7 +163,7 @@ app.controller("Startup", function($scope) {
 	
 });
 
-app.controller("StartupList", function($scope, Startups, Stages, $location) {
+app.controller("StartupList", function($scope, Startups, Stages, Industries, $location) {
 	//One level load (related startups inside related startups are not loaded)
 	var loadRelatedStartups = function(startups) {
 		startups.forEach(function(startup) {
@@ -154,51 +176,78 @@ app.controller("StartupList", function($scope, Startups, Stages, $location) {
 	};
 	$scope.loadedStartups = false;
 	Stages.stages(function(error, stages) {
-		Startups.list(function(error, startups) {
-			loadRelatedStartups(startups);
-			$scope.startups = startups;
-			$scope.loadedStartups = true;
-			stages.forEach(function(stage) {
-				stage.enabled = true;
+		Industries.industries(function(error, industries) {
+			Startups.list(function(error, startups) {
+			
+				loadRelatedStartups(startups);
+				$scope.startups = startups;
+				$scope.loadedStartups = true;
+				
+				
+				$scope.stages = stages;
+				$scope.industries = industries;
+				
+				$scope.selectAllIndustryFilters = function() {
+					$scope.industries.forEach(function(industry) {
+						industry.enabled = true;
+					});
+				};
+				
+				$scope.selectAllStageFilters = function() {
+					$scope.stages.forEach(function(stage) {
+						stage.enabled = true;
+					});
+				};
+				
+				$scope.selectAllStageFilters();
+				$scope.selectAllIndustryFilters();
+				
+				$scope.editStartup = function(startup) {
+					$location.path("/" + startup._id + "/edit");
+				};
+				$scope.deleteStartup = function(startup) {
+					startup.disableModify = true;
+					Startups.del(startup, function(error, startups) {
+						startup.disableModify = false;
+						if(error) {
+							
+						} else {
+							loadRelatedStartups(startups);
+							$scope.startups = startups;
+						}
+					});
+				};
+				
+				$scope.updateFilter = function() {
+					
+				};
+				
+				
+				
+				$scope.startupFilter = function(startup) {
+					var allStages = $scope.stages.every(function(stage) {
+						return stage.enabled;
+					});
+					
+					return allStages || $scope.stages.some(function(stage) {
+						return allStages || stage.enabled && startup.stage && startup.stage._id == stage._id;
+					});
+				};
+				
+				$scope.industryFilter = function(startup) {
+					var allIndustries = $scope.industries.every(function(industry) {
+						return industry.enabled;
+					});
+					return allIndustries || $scope.industries.some(function(industry) { //Loop over all possible industries
+						return industry.enabled && startup.industries && startup.industries.some(function(startupsIndustry) {
+							//Loop over industries that the given startup contains
+							//If the startup contains the industry we are looking for, return true
+							return industry._id == startupsIndustry._id;
+						});
+					});
+					
+				};
 			});
-			$scope.stages = stages;
-			$scope.editStartup = function(startup) {
-				$location.path("/" + startup._id + "/edit");
-			};
-			$scope.deleteStartup = function(startup) {
-				startup.disableModify = true;
-				Startups.del(startup, function(error, startups) {
-					startup.disableModify = false;
-					if(error) {
-						
-					} else {
-						loadRelatedStartups(startups);
-						$scope.startups = startups;
-					}
-				});
-			};
-			
-			$scope.updateFilter = function() {
-				
-			};
-			
-			$scope.selectAllStageFilters = function() {
-				$scope.stages.forEach(function(stage) {
-					stage.enabled = true;
-				});
-			};
-			
-			$scope.startupFilter = function(startup) {
-				var allStages = $scope.stages.every(function(stage) {
-					return stage.enabled;
-				});
-				
-				var stageAllowed = $scope.stages.some(function(stage) {
-					return allStages || stage.enabled && startup.stage && startup.stage._id == stage._id;
-				});
-				
-				return stageAllowed;
-			};
 		});
 	});
 	
@@ -316,6 +365,20 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 		});
 	};
 	
+	$scope.searchIndustries = function(searchText) {
+		return $http.get("/data/industry").then(function(response) {
+			var results = response.data;
+			return $filter("filter")(results, searchText)
+				.filter(function(test) {
+					//Exclude industries that are already selected
+					return !$scope.toEdit.industries.some(function(selectedIndustry) {
+						return selectedIndustry._id == test._id;
+					});
+				});
+			
+		});
+	};
+	
 	$scope.founderSelected = function(index, model) {
 		console.log(index);
 		console.log(model);
@@ -337,6 +400,16 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 		
 	};
 	
+	$scope.industrySelected = function(index, model) {
+		$scope.toEdit.industries[index] = model;
+	};
+	
+	$scope.industryChanged = function(index) {
+		if($scope.toEdit.industries[index]._id) {
+			$scope.toEdit.industries[index] = {name: $scope.toEdit.industries[index].name};
+		}
+	};
+	
 	
 	$scope.addFounder = function() {
 		if(!$scope.toEdit.founders) {
@@ -354,7 +427,7 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 		if(!$scope.toEdit.industries) {
 			$scope.toEdit.industries = [];
 		}
-		$scope.toEdit.industries.push("");
+		$scope.toEdit.industries.push({});
 	};
 	
 	$scope.deleteIndustry = function(indexToDelete) {

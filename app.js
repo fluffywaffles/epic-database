@@ -74,6 +74,7 @@ var onDatabaseConnected = function() {
 	require("./routes/data/startup")(app);
 	require("./routes/data/person")(app);
 	require("./routes/data/stage")(app);
+	require("./routes/data/industry")(app);
 	
 	app.get("/startup", function(request, response) {
 		response.render("startup/index");

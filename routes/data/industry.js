@@ -2,12 +2,12 @@
 var mongoose = require("mongoose");
 
 module.exports = function(app) {
-	app.get("/data/stage", function(request, response) {
-		var Stage = mongoose.model("Stage");
-		var stages = Stage.find(function(error, data) {
+	app.get("/data/industry", function(request, response) {
+		var Industry = mongoose.model("Industry");
+		var industries = Industry.find(function(error, data) {
 			if(error) {
 				console.log(error);
-				response.send("Error getting stages from DB", 404);
+				response.send("Error getting industries from DB", 404);
 			}
 			response.send(data, 200);
 		});
