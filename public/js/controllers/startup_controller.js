@@ -196,28 +196,31 @@ app.controller("StartupList", function($scope, Startups, Stages, $location) {
 	
 });
 
-app.controller("Add", function($scope, Startups, $location) {
+app.controller("Add", function($scope, Startups, Stages, $location) {
 	$scope.loadedStartups = false;
 	$scope.disableForm = true;
 	Startups.list(function(error, startups) {
-		$scope.loadedStartups = true;
-		$scope.disableForm = false;
-		$scope.toEdit = {};
-		$scope.saveNew = function() {
-			$scope.saving = true;
-			$scope.disableForm = true;
-			Startups.addOrEdit($scope.toEdit, function(error, startup) {
-				if(error) {
+		Stages.stages(function(error, stages) {
+			$scope.loadedStartups = true;
+			$scope.disableForm = false;
+			$scope.toEdit = {};
+			$scope.stages = stages;
+			$scope.saveNew = function() {
+				$scope.saving = true;
+				$scope.disableForm = true;
+				Startups.addOrEdit($scope.toEdit, function(error, startup) {
+					if(error) {
+						$scope.disableForm = false;
+						$scope.saving = false;
+						return;
+					}
+					console.log("Added successfully");
 					$scope.disableForm = false;
 					$scope.saving = false;
-					return;
-				}
-				console.log("Added successfully");
-				$scope.disableForm = false;
-				$scope.saving = false;
-				$location.path("/");
-			});
-		};
+					$location.path("/");
+				});
+			};
+		});
 	});
 });
 

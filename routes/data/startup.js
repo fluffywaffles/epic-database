@@ -38,7 +38,15 @@ module.exports = function(app) {
 		var toAdd = request.body;
 		console.log(toAdd);
 		var Startup = mongoose.model("Startup");
-		addOrEditStartupCallback(Startup.create(toAdd), response);
+		Startup.create(toAdd, function(err, added) {
+			if(err) {
+				console.log(err);
+				response.send(500, "Error saving to DB");
+			} else {
+				addOrEditStartupCallback(Startup.findById(added._id), response);
+			}
+		});
+		
 	});
 	
 	app.post("/data/startup/:id", function(request, response) {
