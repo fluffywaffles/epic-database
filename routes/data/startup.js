@@ -33,83 +33,52 @@ module.exports = function(app) {
 		});
 	};
 	
-	//THIS MUST COME BEFORE THE EDIT PATH!!
-	app.post("/data/startup/new", function(request, response) {
-		var toAdd = request.body;
-		console.log(toAdd);
-		var Startup = mongoose.model("Startup");
-		Startup.create(toAdd, function(err, added) {
-			if(err) {
-				console.log(err);
-				response.send(500, "Error saving to DB");
-			} else {
-				addOrEditStartupCallback(Startup.findById(added._id), response);
-			}
-		});
-		
-	});
-	
-	app.post("/data/startup/:id", function(request, response) {
-		var toUpdate = request.body;
-		delete toUpdate._id;
-		var id = request.params.id;
-		var Startup = mongoose.model("Startup");
-		var Person = mongoose.model("Person");
-		var Industry = mongoose.model("Industry");
-		//console.log(id);
-		//console.log(toUpdate);
-		
-		
-		var onFoundersUpdated = function() {
-			
-			var onIndustriesUpdated = function() {
-				addOrEditStartupCallback(Startup.findByIdAndUpdate(id, toUpdate), response);
+	var processIndustries = function(startup, onDone) {
+		if(startup.industries && startup.industries.length > 0) {
+			var count = 0;
+			var industryIdMap = [];
+			var oneDone = function() {
+				count++;
+				if(count == startup.industries.length) {
+					startup.industries = industryIdMap;
+					onDone(undefined);
+				}
 			};
 			
-			if(toUpdate.industries && toUpdate.industries.length > 0) {
-				var count = 0;
-				var industryIdMap = [];
-				var oneDone = function() {
-					count++;
-					if(count == toUpdate.industries.length) {
-						toUpdate.industries = industryIdMap;
-						onIndustriesUpdated();
-					}
-				};
-				
-				toUpdate.industries.forEach(function(industry, index) {
-					if(industry._id) {
-						industryIdMap[index] = industry._id;
-						oneDone();
-					} else {
-						Industry.create(industry, function(error, newIndustry) {
-							if(error) {
-								console.log("Error with new person");
-								response.send(404);
-							} else {
-								industryIdMap[index] = newIndustry._id;
-								oneDone();
-							}
-						});
-					}
-				});
-			} else {
-				onIndustriesUpdated();
-			}
-			
-		};
-		
-		if(toUpdate.founders && toUpdate.founders.length > 0) {
+			startup.industries.forEach(function(industry, index) {
+				if(industry._id) {
+					industryIdMap[index] = industry._id;
+					oneDone();
+				} else {
+					Industry.create(industry, function(error, newIndustry) {
+						if(error) {
+							console.log("Error with new industry");
+							onDone("Error in industry");
+							//Probably should undo or switch to multi/upsert transaction
+						} else {
+							industryIdMap[index] = newIndustry._id;
+							oneDone();
+						}
+					});
+				}
+			});
+		} else {
+			onDone(undefined);
+		}
+	};
+	
+	var processFounders = function(startup, onDone) {		
+		if(startup.founders && startup.founders.length > 0) {
 			var founderIdMap = [];
 			var count = 0;
 			var oneDone = function() {
 				count++;
-				if(count == toUpdate.founders.length) {
-					toUpdate.founders = founderIdMap;
-					onFoundersUpdated();
+				if(count == startup.founders.length) {
+					startup.founders = founderIdMap;
+					onDone(undefined);
 				}
 			};
-			toUpdate.founders.forEach(function(founder, index) {
+			startup.founders.forEach(function(founder, index) {
 				if(founder._id) {
 					founderIdMap[index] = founder._id;
 					oneDone();
@@ -126,12 +95,65 @@ module.exports = function(app) {
 				}
 			});
 		} else {
-			onFoundersUpdated();
+			onDone(undefined);
 		}
+	};
+	
+	//THIS MUST COME BEFORE THE EDIT PATH!!
+	app.post("/data/startup/new", function(request, response) {
+		var toAdd = request.body;
+		console.log(toAdd);
+		var Startup = mongoose.model("Startup");
+		processFounders(toAdd, function(error) {
+			if(error) {
+				console.log(error);
+				response.send(500, "Error saving to DB");
+			}
+			processIndustries(toAdd, function(error) {
+				if(error) {
+					console.log(error);
+					response.send(500, "Error saving to DB");
+				}
+				Startup.create(toAdd, function(err, added) {
+					if(err) {
+						console.log(err);
+						response.send(500, "Error saving to DB");
+					} else {
+						addOrEditStartupCallback(Startup.findById(added._id), response);
+					}
+				});
+				
+			});
+		});
+		
 		
 	});
 	
+	
+	app.post("/data/startup/:id", function(request, response) {
+		var toUpdate = request.body;
+		delete toUpdate._id;
+		var id = request.params.id;
+		var Startup = mongoose.model("Startup");
+		var Person = mongoose.model("Person");
+		var Industry = mongoose.model("Industry");
+		processFounders(toUpdate, function(error) {
+			if(error) {
+				console.log(error);
+				response.send(500, "Error saving to DB");
+			}
+			processIndustries(toUpdate, function(error) {
+				if(error) {
+					console.log(error);
+					response.send(500, "Error saving to DB");
+				}
+				addOrEditStartupCallback(Startup.findByIdAndUpdate(id, toUpdate), response);
+			});
+		});
+	});
+	
 	app.del("/data/startup/:id", function(request, response) {
+		
 		var id = new mongoose.Types.ObjectId(request.params.id);
 		var Startup = mongoose.model("Startup");
 		console.log(id);
