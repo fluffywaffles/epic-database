@@ -83,6 +83,12 @@ app.factory("Startups", ["$http", function($http) {
 				});
 			}
 			
+			if(startup.media) {
+				startup.media = startup.media.filter(function(medium) {
+					return !!medium;
+				});
+			}
+			
 			console.log(startup);
 			
 			
@@ -293,5 +299,16 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 	
 	$scope.deleteRelatedStartup = function(indexToDelete) {
 		$scope.toEdit.relatedStartups.splice(indexToDelete, 1);
+	};
+	
+	$scope.addMedia = function() {
+		if(!$scope.toEdit.media) {
+			$scope.toEdit.media = [];
+		}
+		$scope.toEdit.media.push("");
+	};
+	
+	$scope.deleteMedia = function(indexToDelete) {
+		$scope.toEdit.media.splice(indexToDelete, 1);
 	};
 });

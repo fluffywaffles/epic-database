@@ -21,7 +21,7 @@ var startup = Schema({
 	stage: String,
 	location: String,
 	website: String,
-	media: String,
+	media: [String],
 	relatedStartups: [Schema.Types.ObjectId],
 	details: String
 });

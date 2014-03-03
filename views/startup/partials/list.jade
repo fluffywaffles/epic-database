@@ -32,9 +32,9 @@ div(ng-repeat="startup in (startups | filter:searchStartups | orderBy:'+name')")
     h2 Phone Number
     p {{startup.phone}}
     h2 Media
-    p
-      a(href="{{startup.media}}")
-        | {{startup.media}}
+    p(ng-repeat="medium in startup.media track by $index")
+      a(href="{{medium}}")
+        | {{medium}}
     h2 Details
     p {{startup.details}}
     h2 Related Startups

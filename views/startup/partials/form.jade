@@ -65,7 +65,15 @@ div(ng-controller="StartupForm")
     input(class="form-control", type="text", name="phone", ng-model="toEdit.phone", ng-disabled="disableForm")
   div(class="form-group")
     label Media
-    input(class="form-control", type="text", name="media", ng-model="toEdit.media", ng-disabled="disableForm")
+    
+    table(class="form-group", ng-repeat="medium in toEdit.media track by $index")
+      tr
+        td
+          button(class="btn btn-danger", ng-click="deleteMedia($index)", ng-disabled="disableForm") Delete
+        td(style="width: 100%;")
+          input(placeholder="Type name of media", class="form-control", type="text", ng-model="toEdit.media[$index]", ng-disabled="disableForm")
+    div(class="form-group")
+      button(class="btn btn-success", ng-click="addMedia()", ng-disabled="disableForm") Add Media
   div(class="form-group")
     label Details
     textarea(class="form-control", name="details", ng-model="toEdit.details", ng-disabled="disableForm")
