@@ -306,7 +306,13 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 			if(!results) {
 				results = [];
 			}
-			return $filter("filter")(results, searchText);
+			return $filter("filter")(results, searchText)
+				.filter(function(test) {
+					//Exclude founders that are already selected
+					return !$scope.toEdit.founders.some(function(selectedFounder) {
+						return selectedFounder._id == test._id;
+					});
+			});
 		});
 	};
 	
