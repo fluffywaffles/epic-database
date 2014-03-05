@@ -329,10 +329,49 @@ app.controller("Edit", function($scope, Startups, Stages, $routeParams, $locatio
 	});
 });
 
-app.controller("StartupForm", function($scope, Startups, $http, $filter) {
+
+app.factory("Geocoder", ["$q", function($q) {
+	var geocoder = new google.maps.Geocoder();
+	
+	return {
+		codeAddress: function(location) {
+			var deferred = $q.defer();
+			geocoder.geocode({address: location}, function(results, status) {
+				if(status == google.maps.GeocoderStatus.OK) {
+					deferred.resolve(results);
+				} else {
+					console.log(status);
+					deferred.reject(status);
+				}
+			});
+			return deferred.promise;
+		}
+	};
+}]);
+
+
+
+app.controller("StartupForm", function($scope, Startups, $http, $filter, Geocoder) {
 	Startups.list(function(error, startups) {
 		$scope.startups = startups;
 	});
+
+	$scope.codeAddress = function(address) {
+		return Geocoder.codeAddress(address);
+	};
+	
+	$scope.locationSelected = function(location) {
+		console.log(location);
+		$scope.toEdit.location = {
+			formatted_address: location.formatted_address,
+			latitude: location.geometry.location.d,
+			longitude: location.geometry.location.e
+		};
+	};
+	
+	$scope.locationChanged = function() {
+		$scope.toEdit.location = {};
+	};
 	
 	$scope.excludeSelectedStartups = function(test) {
 		if(test._id == $scope.toEdit._id) {
@@ -455,4 +494,5 @@ app.controller("StartupForm", function($scope, Startups, $http, $filter) {
 	$scope.deleteMedia = function(indexToDelete) {
 		$scope.toEdit.media.splice(indexToDelete, 1);
 	};
+	
 });

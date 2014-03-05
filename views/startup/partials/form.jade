@@ -69,7 +69,18 @@ div(ng-controller="StartupForm")
       select(class="form-control", ng-required="true", ng-model="toEdit.stage", ng-options="stage.name for stage in stages")
   div(class="form-group")
     label Location
-    input(class="form-control", type="text", name="location", ng-model="toEdit.location", ng-disabled="disableForm")
+    input(
+      class="form-control",
+      type="text",
+      name="location",
+      ng-model="toEdit.location.formatted_address",
+      ng-disabled="disableForm",
+      typeahead-editable="false",
+      typeahead="geocodedLocation as geocodedLocation.formatted_address for geocodedLocation in codeAddress($viewValue)",
+      typeahead-on-select="locationSelected($model)",
+      ng-change="locationChanged()",
+      typeahead-wait-ms="300"
+      )
   div(class="form-group")
     label Phone Number
     input(class="form-control", type="text", name="phone", ng-model="toEdit.phone", ng-disabled="disableForm")

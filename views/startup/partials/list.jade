@@ -42,7 +42,7 @@ div(ng-repeat="startup in (startups | filter:searchStartups | filter:startupFilt
     h2 Stage
     p {{startup.stage.name}}
     h2 Location
-    p {{startup.location}}
+    p {{startup.location.formatted_address}}
     h2 Phone Number
     p {{startup.phone}}
     h2 Media

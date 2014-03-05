@@ -25,7 +25,11 @@ var startup = Schema({
 		type: Schema.Types.ObjectId,
 		ref: "Stage"
 		},
-	location: String,
+	location: {
+		formatted_address: String,
+		latitude: Number,
+		longitude: Number
+	},
 	website: String,
 	media: [String],
 	relatedStartups: [Schema.Types.ObjectId],
